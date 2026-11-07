@@ -464,6 +464,30 @@
       user-select: none;
     }
 
+    .kode-mulai {
+      margin: 15px auto;
+      width: 85%;
+      max-width: 280px;
+    }
+    
+    .kode-mulai input {
+      width: 100%;
+      padding: 13px;
+      border: 2px solid #1976d2;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 5px;
+      box-sizing: border-box;
+      outline: none;
+    }
+    
+    .kode-mulai input:focus {
+      border-color: #ff9800;
+      box-shadow: 0 0 8px rgba(255, 152, 0, 0.4);
+    }
+
   </style>
 </head>
 
@@ -475,6 +499,17 @@
   <p><b>Permainan ini dirancang untuk Interactive Flat Panel (IFP)</b></p>
   <p>Dapat digunakan di smartphone/tablet dengan view landscape/mendatar</p>
   <br>
+  <div class="kode-mulai">
+    <input
+      type="password"
+      id="kodeMulai"
+      placeholder="Masukkan Kode Mulai"
+      inputmode="numeric"
+      maxlength="6"
+      autocomplete="off"
+    >
+  </div>
+  
   <button class="btn-ok" onclick="masukGame()">Oke</button>
 </div>
 
@@ -811,6 +846,13 @@
   }
 
   function masukGame(){
+    const kode = document.getElementById("kodeMulai").value;
+    if (kode !== "270217") {
+      alert("Kode mulai salah! Silakan masukkan kode yang benar.");
+      document.getElementById("kodeMulai").value = "";
+      document.getElementById("kodeMulai").focus();
+      return;
+    }
     // ✅ FULLSCREEN — HARUS PALING AWAL
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen();
