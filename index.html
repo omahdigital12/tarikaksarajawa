@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Icon -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:Arial,Helvetica,sans-serif;
+      background:#eaf6ff;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    /* ================= HALAMAN PEMBUKA ================= */
+    #welcome{
+      width:90%;
+      max-width:760px;
+      background:#fff;
+      border-radius:12px;
+      padding:40px 30px;
+      text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    #welcome h1{
+      margin-top:0;
+      font-size:30px;
+    }
+
+    .btn-ok{
+      background:#4CAF50;
+      color:#fff;
+      border:none;
+      padding:10px 35px;
+      font-size:16px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+
+    /* ================= HALAMAN MODE ================= */
+    #mode{
+      display:none;
+      width:95%;
+      max-width:1000px;
+      background:#fff;
+      border-radius:12px;
+      padding:30px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    #mode h2{
+      text-align:center;
+      margin-top:0;
+      margin-bottom:25px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(5, 1fr); /* 5 kolom */
+      gap:20px;
+    }
+
+    .box{
+      background:#f5f5f5;
+      border-radius:12px;
+      height:120px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      font-size:18px;
+      cursor:pointer;
+      box-shadow:0 3px 6px rgba(0,0,0,0.15);
+      transition:0.2s;
+    }
+
+    .box:hover{
+      transform:scale(1.05);
+      background:#eaeaea;
+    }
+
+    .box span{
+      font-size:16px;
+      margin-top:6px;
+    }
+
+    @media(max-width:600px){
+      .box{height:100px;}
+    }
+
+    /* ===== COUNTDOWN ===== */
+    #countdownOverlay{
+      position:fixed;
+      top:0;
+      left:0;
+      width:100vw;
+      height:100vh;
+      background:rgba(0,0,0,0.75);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+    }
+
+    #countdownText{
+      font-size:120px;
+      font-weight:bold;
+      color:#fff;
+      animation:zoom 0.5s ease;
+    }
+
+    @keyframes zoom{
+      from{transform:scale(0.3); opacity:0;}
+      to{transform:scale(1); opacity:1;}
+    }
+    .arena-title{
+      text-align:center;
+      margin-bottom:20px;
+    }
+    /* ================= AREA GAME ================= */
+    #gameArea{
+      background:#e0f7fa;   /* GANTI WARNA DI SINI */
+      padding:20px;
+      border-radius:16px;
+    }
+
+    .arena-header{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      margin-bottom:15px;
+    }
+
+    .arena-title{
+      margin:0;
+      text-align:center;
+    }
+
+    .btn-menu{
+      position:fixed;
+      top:12px;
+      right:12px;
+
+      width:48px;
+      height:48px;
+      border-radius:50%;
+      background:linear-gradient(#ffb74d, #f57c00);
+      color:white;
+      border:3px solid #e65100;
+
+      font-size:22px;
+      cursor:pointer;
+
+      display:flex;
+      align-items:center;
+      justify-content:center;
+
+      box-shadow:0 4px 8px rgba(0,0,0,0.35);
+      z-index:9999;
+    }
+
+    .btn-menu:hover{
+      background:#f57c00;
+      transform:scale(1.05);
+    }
+
+    .btn-menu:active{
+      transform:scale(0.95);
+    }
+
+    .arena{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:20px;
+    }
+
+    .panel{
+      width:280px;
+      background:#fff;
+      border-radius:12px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
+      padding:10px;
+    }
+
+    .panel-header{
+      color:#fff;
+      border-radius:10px 10px 0 0;
+      font-weight:400;         /* ketebalan huruf soal */
+      text-align:center;
+      font-size:32px;
+      min-height:60px;          /* 🔒 tinggi minimum */
+      display:flex;
+      align-items:center;       /* center vertikal */
+      justify-content:center;   /* center horizontal */
+      padding:0 10px;           /* hilangkan padding atas-bawah */
+    }
+
+
+    .biru{background:#1a237e;}
+    .merah{background:#8e0022;}
+
+    .jawaban{
+      width:97%;
+      height:40px;
+      margin:10px 0;
+      font-size:20px;
+      text-align:center;
+    }
+
+    .keypad{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      width:100%;
+      box-sizing:border-box;
+    }
+
+    .row.qwerty{
+      display:flex;
+      width:100%;
+      justify-content:center;
+      gap:4px;
+    }
+
+    .row.angka-row button{
+      flex:1;
+      min-width:0;
+    }
+
+    .row.qwerty button{
+      flex: 0 0 calc((100% - 9 * 4px) / 10);
+      min-width:0;
+      padding:6px 0;
+      font-size:clamp(11px, 1.8vw, 15px);
+      box-sizing:border-box;
+    }
+
+    .row.qwerty .shift{
+      flex: 0 0 calc(1.5 * ((100% - 9 * 4px) / 10));
+    }
+
+    .row.qwerty .del{
+      flex: 0 0 calc(1.5 * ((100% - 9 * 4px) / 10));
+    }
+
+    .row.qwerty.bottom .mode{
+      flex: 0 0 calc(1.5 * ((100% - 9 * 4px) / 10));
+    }
+
+    .row.qwerty.bottom .c{
+      flex: 0 0 calc(1.5 * ((100% - 9 * 4px) / 10));
+    }
+
+    .row.qwerty.bottom .go{
+      flex: 0 0 calc(2 * ((100% - 9 * 4px) / 10));
+    }
+
+    .row.qwerty.bottom .space{
+      flex: 0 0 calc(3.5 * ((100% - 9 * 4px) / 10));
+    }
+
+    .row.qwerty.bottom .punct{
+      flex: 0 0 calc((100% - 9 * 4px) / 10);
+    }
+
+    .keypad button{
+      padding:0;                 /* ⬅️ WAJIB */
+      font-size:14px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      cursor:pointer;
+      box-sizing:border-box;
+    }
+
+    .keypad .angka{
+      color:black;
+    }
+
+    .keypad .space{
+      background:#e0e0e0;
+      font-weight:bold;
+    }
+
+    .keypad .del{
+      background:#ff9800;
+      color:#fff;
+      font-weight:bold;
+    }
+
+    .keypad .shift{
+      background:#cfd8dc;
+      font-weight:bold;
+    }
+    .keypad .mode{
+      background:#9e9e9e;
+      color:#fff;
+      font-weight:bold;
+    }
+    .keypad .c{background:#f44336;color:#fff;}
+    .keypad .go{background:#0288d1;color:#fff;}
+
+    .tengah{
+      display:flex;
+      align-items:center;
+    }
+
+    .pemain img{
+      width:120px;
+    }
+
+    .tali{
+      width:220px;
+      height:8px;
+      background:#a67c52;
+      margin:0 10px;
+      position:relative;
+    }
+
+    .penanda{
+      width:16px;
+      height:20px;
+      background:yellow;
+      position:absolute;
+      left:50%;
+      top:-6px;
+      transform:translateX(-50%);
+    }
+
+    .instruksi{
+      text-align:center;
+      margin-top:20px;
+      font-size:18px;
+      font-weight:bold;
+    }
+
+    .arena-svg{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+    }
+
+    .jawaban.salah{
+      background:#ffebee;
+      border:2px solid #f44336;
+      color:#b71c1c;
+      animation:guncang 0.25s;
+    }
+
+    @keyframes guncang{
+      0%{transform:translateX(0)}
+      25%{transform:translateX(-4px)}
+      50%{transform:translateX(4px)}
+      75%{transform:translateX(-4px)}
+      100%{transform:translateX(0)}
+    }
+    #winOverlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.6);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:999;
+    }
+
+    .winBox{
+      background:#fff;
+      padding:30px;
+      border-radius:15px;
+      text-align:center;
+    }
+
+    .winBox button{
+      margin-top:15px;
+      padding:10px 20px;
+      font-size:16px;
+      background:#4CAF50;
+      color:white;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+    }
+
+    .win-player{
+      margin-bottom:-15px;   /* ⬅️ ATUR JARAK PLAYER KE PIALA */
+    }
+
+    .piala-emoji{
+      font-size:40px;
+      margin:10px 0;
+    }
+
+    .footer{
+      position:fixed;          /* ⬅️ KUNCI */
+      bottom:0;
+      left:0;
+      width:100%;
+
+      margin:0;
+      padding:8px 10px;
+      font-size:13px;
+      color:#555;
+
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      justify-content:center;
+      align-items:center;
+
+      background:rgba(245,247,250,0.95);
+      z-index:10;
+    }
+
+
+    .footer a{
+      text-decoration:none;
+      color:#555;
+      display:flex;
+      align-items:center;
+      gap:4px;
+    }
+
+    .footer a:hover{
+      color:#000;
+    }
+
+    .footer .fa-youtube{color:#ff0000;}
+    .footer .fa-tiktok{color:#000;}
+    .footer .fa-instagram{color:#e1306c;}
+    .footer .fa-facebook{color:#1877f2;}
+
+    .footer .lykn{
+      font-weight:600;
+    }
+
+    /* Sembunyikan sementara footer tertentu */
+    .footer .fa-youtube,
+    .footer .fa-instagram,
+    .footer .fa-facebook{
+      display:none;
+    }
+
+    .keypad button{
+      touch-action: manipulation;
+      user-select: none;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<!-- ================= HALAMAN PEMBUKA ================= -->
+<div id="welcome">
+  <h1>TARIK TAMBANG AKSARA JAWA</h1>
+  <p><b>Permainan ini dirancang untuk Interactive Flat Panel (IFP)</b></p>
+  <p>Dapat digunakan di smartphone/tablet dengan view landscape/mendatar</p>
+  <br>
+  <button class="btn-ok" onclick="masukGame()">Oke</button>
+</div>
+
+<!-- ================= HALAMAN PILIH MATERI ================= -->
+<div id="mode">
+  <h2>Tarik Tambang Aksara Jawa<br>Paugeran Sriwedari</h2>
+
+  <div class="grid">
+
+    <div class="box" onclick="pilihMode('legena')">
+      <span>Aksara Legena</span>
+    </div>
+    <div class="box" onclick="pilihMode('sandhangan')">
+      <span>Sandhangan</span>
+    </div>
+    <div class="box" onclick="pilihMode('pasangan')">
+      <span>Pasangan</span>
+    </div>
+    <div class="box" onclick="pilihMode('talingtarung')">
+      <span>Taling Tarung Palsu</span>
+    </div>
+    <div class="box" onclick="pilihMode('dwipurwa')">
+      <span>Dwipurwa</span>
+    </div>
+    <div class="box" onclick="pilihMode('andhahan')">
+      <span>Tembung Andhahan</span>
+    </div>
+    <div class="box" onclick="pilihMode('angka')">
+      <span>Angka Jawa</span>
+    </div>
+    <div class="box" onclick="pilihMode('swara')">
+      <span>Aksara Swara</span>
+    </div>
+    <div class="box" onclick="pilihMode('rekan')">
+      <span>Aksara Rekan</span>
+    </div>
+    <div class="box" onclick="pilihMode('murda')">
+      <span>Aksara Murda</span>
+    </div>
+    
+  </div>
+
+</div>
+<!-- ================= AREA GAME ================= -->
+<div id="gameArea" style="display:none;">
+
+  <div class="arena-header">
+    <h1 class="arena-title">Tarik Tambang Aksara Jawa</h1>
+    <button class="btn-menu" onclick="kembaliMenu()" title="Kembali ke Menu">
+      <i class="fa-solid fa-house"></i>
+    </button>
+  </div>
+
+  <div class="arena">
+
+    <!-- ===== PANEL KIRI ===== -->
+    <div class="panel kiri">
+      <div class="panel-header biru">?</div>
+      <input type="text" class="jawaban" readonly>
+
+      <div class="keypad huruf" data-player="kiri">
+
+        <!-- BARIS ANGKA -->
+        <div class="row qwerty angka-row">
+          <button class="angka">1</button>
+          <button class="angka">2</button>
+          <button class="angka">3</button>
+          <button class="angka">4</button>
+          <button class="angka">5</button>
+          <button class="angka">6</button>
+          <button class="angka">7</button>
+          <button class="angka">8</button>
+          <button class="angka">9</button>
+          <button class="angka">0</button>
+        </div>
+
+        <!-- QWERTY -->
+        <div class="row qwerty">
+          <button class="huruf" data-key="q">q</button>
+          <button class="huruf" data-key="w">w</button>
+          <button class="huruf" data-key="e">e</button>
+          <button class="huruf" data-key="r">r</button>
+          <button class="huruf" data-key="t">t</button>
+          <button class="huruf" data-key="y">y</button>
+          <button class="huruf" data-key="u">u</button>
+          <button class="huruf" data-key="i">i</button>
+          <button class="huruf" data-key="o">o</button>
+          <button class="huruf" data-key="p">p</button>
+        </div>
+
+        <div class="row qwerty">
+          <button class="huruf" data-key="a">a</button>
+          <button class="huruf" data-key="s">s</button>
+          <button class="huruf" data-key="d">d</button>
+          <button class="huruf" data-key="f">f</button>
+          <button class="huruf" data-key="g">g</button>
+          <button class="huruf" data-key="h">h</button>
+          <button class="huruf" data-key="j">j</button>
+          <button class="huruf" data-key="k">k</button>
+          <button class="huruf" data-key="l">l</button>
+        </div>
+
+        <div class="row qwerty">
+          <button class="shift">⇧</button>
+          <button class="huruf" data-key="z">z</button>
+          <button class="huruf" data-key="x">x</button>
+          <button class="huruf" data-key="c">c</button>
+          <button class="huruf" data-key="v">v</button>
+          <button class="huruf" data-key="b">b</button>
+          <button class="huruf" data-key="n">n</button>
+          <button class="huruf" data-key="m">m</button>
+          <button class="del">⌫</button>
+        </div>
+
+        <div class="row qwerty bottom">
+          <button class="mode">/?,</button>
+          <button class="punct">,</button>
+          <button class="punct">.</button>
+          <button class="space">␣</button>
+          <button class="c">C</button>
+          <button class="go">GO</button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ===== ARENA TENGAH ===== -->
+    <div class="arena-svg">
+
+    <svg width="520" height="200" viewBox="0 0 520 200">
+
+      <!-- ORANG KIRI (BIRU) -->
+      <g id="pemainKiri">
+        <circle cx="110" cy="70" r="18" fill="#f2c9a0"/>
+        <rect x="95" y="90" width="30" height="50" rx="8" fill="#0b1a6d"/>
+      </g>
+
+      <!-- TALI -->
+      <line x1="140" y1="110" x2="380" y2="110"
+            stroke="#8b5a2b" stroke-width="6"/>
+
+      <!-- GARIS TENGAH (DIAM) -->
+      <line
+        x1="260" y1="70"
+        x2="260" y2="150"
+        stroke="#555"
+        stroke-width="2"
+      />
+
+      <!-- PENANDA -->
+      <rect id="penanda"
+            x="255" y="95"
+            width="10" height="30"
+            fill="yellow"/>
+
+      <!-- ORANG KANAN (MERAH) -->
+      <g id="pemainKanan">
+        <circle cx="410" cy="70" r="18" fill="#f2c9a0"/>
+        <rect x="395" y="90" width="30" height="50" rx="8" fill="#7a001c"/>
+      </g>
+
+    </svg>
+
+    </div>
+
+    <!-- ===== PANEL KANAN ===== -->
+    <div class="panel kanan">
+      <div class="panel-header merah">?</div>
+      <input type="text" class="jawaban" readonly>
+
+      <div class="keypad huruf" data-player="kanan">
+
+        <!-- BARIS ANGKA -->
+        <div class="row qwerty angka-row">
+          <button class="angka">1</button>
+          <button class="angka">2</button>
+          <button class="angka">3</button>
+          <button class="angka">4</button>
+          <button class="angka">5</button>
+          <button class="angka">6</button>
+          <button class="angka">7</button>
+          <button class="angka">8</button>
+          <button class="angka">9</button>
+          <button class="angka">0</button>
+        </div>
+
+        <!-- QWERTY -->
+        <div class="row qwerty">
+          <button class="huruf" data-key="q">q</button>
+          <button class="huruf" data-key="w">w</button>
+          <button class="huruf" data-key="e">e</button>
+          <button class="huruf" data-key="r">r</button>
+          <button class="huruf" data-key="t">t</button>
+          <button class="huruf" data-key="y">y</button>
+          <button class="huruf" data-key="u">u</button>
+          <button class="huruf" data-key="i">i</button>
+          <button class="huruf" data-key="o">o</button>
+          <button class="huruf" data-key="p">p</button>
+        </div>
+
+        <div class="row qwerty">
+          <button class="huruf" data-key="a">a</button>
+          <button class="huruf" data-key="s">s</button>
+          <button class="huruf" data-key="d">d</button>
+          <button class="huruf" data-key="f">f</button>
+          <button class="huruf" data-key="g">g</button>
+          <button class="huruf" data-key="h">h</button>
+          <button class="huruf" data-key="j">j</button>
+          <button class="huruf" data-key="k">k</button>
+          <button class="huruf" data-key="l">l</button>
+        </div>
+
+        <div class="row qwerty">
+          <button class="shift">⇧</button>
+          <button class="huruf" data-key="z">z</button>
+          <button class="huruf" data-key="x">x</button>
+          <button class="huruf" data-key="c">c</button>
+          <button class="huruf" data-key="v">v</button>
+          <button class="huruf" data-key="b">b</button>
+          <button class="huruf" data-key="n">n</button>
+          <button class="huruf" data-key="m">m</button>
+          <button class="del">⌫</button>
+        </div>
+
+        <div class="row qwerty bottom">
+          <button class="mode">/?,</button>
+          <button class="punct">,</button>
+          <button class="punct">.</button>
+          <button class="space">␣</button>
+          <button class="c">C</button>
+          <button class="go">GO</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <p class="instruksi">Jawab soal untuk menarik tali!</p>
+
+</div>
+
+<footer class="footer">
+  <span>Creator: Guru Jawa</span>
+
+  <a href="https://youtube.com/@saloomrd" target="_blank">
+    <i class="fab fa-youtube"></i>
+  </a>
+
+  <a href="https://tiktok.com/@gurujawa" target="_blank">
+    <i class="fab fa-tiktok"></i> Guru Jawa
+  </a>
+
+  <a href="https://www.instagram.com/saloom_rikardo" target="_blank">
+    <i class="fab fa-instagram"></i>
+  </a>
+
+  <a href="https://facebook.com/SaloomRikardoDaCosta" target="_blank">
+    <i class="fab fa-facebook"></i>
+  </a>
+
+  <!-- ✅ LYKN.ID -->
+  <a href="https://lynk.id/sinaujawa" target="_blank" class="lykn">
+    🔗 lynk.id/sinaujawa
+  </a>
+</footer>
+
+<!-- ===== OVERLAY MENANG ===== -->
+<div id="winOverlay" style="display:none;">
+  <div class="winBox">
+
+    <!-- ===== SVG PLAYER ===== -->
+    <svg class="win-player" width="120" height="120" viewBox="0 0 200 200">
+      <!-- kepala -->
+      <circle cx="100" cy="55" r="28" fill="#f2c9a0"/>
+
+      <!-- badan -->
+      <rect id="warnaBadan"
+            x="60" y="90"
+            width="80" height="60"
+            rx="18"
+            fill="#0b1a6d"/>
+
+      <!-- tangan kiri -->
+      <line x1="60" y1="100" x2="25" y2="70"
+            stroke="#333" stroke-width="6" stroke-linecap="round"/>
+
+      <!-- tangan kanan -->
+      <line x1="140" y1="100" x2="175" y2="70"
+            stroke="#333" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+
+    <!-- ===== PIALA ===== -->
+    <div class="piala-emoji">🏆</div>
+
+    <!-- ===== TEKS MENANG ===== -->
+    <h2 id="winText">Player Biru Menang!</h2>
+
+    <!-- ===== TOMBOL ===== -->
+    <button onclick="mainLagi()">Main Lagi</button>
+
+  </div>
+</div>
+
+<div id="countdownOverlay">
+  <div id="countdownText">3</div>
+</div>
+
+<script>
+  /* ===== MESIN BUNYI ===== */
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+  function bunyi(freq, dur){
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = "triangle";   // lembut & nyaman di kelas
+    osc.frequency.value = freq;
+
+    gain.gain.value = 0.2;  // volume aman
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + dur);
+  }
+
+  function bunyiMenang(){
+    bunyi(700, 0.15);
+    setTimeout(()=>bunyi(900, 0.15), 180);
+    setTimeout(()=>bunyi(1200, 0.3), 360);
+  }
+
+  function masukGame(){
+    // ✅ FULLSCREEN — HARUS PALING AWAL
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    }
+    audioCtx.resume();
+    document.getElementById("welcome").style.display = "none";
+    document.getElementById("mode").style.display = "block";
+  }
+
+  function mulaiGame(){
+    const overlay = document.getElementById("countdownOverlay");
+    const text = document.getElementById("countdownText");
+    const game = document.getElementById("gameArea");
+    const mode = document.getElementById("mode");
+
+    mode.style.display = "none";
+    overlay.style.display = "flex";
+
+    let hitung = 3;
+    text.innerText = hitung;
+    bunyi(700, 0.12);   // bunyi hitung
+
+    const timer = setInterval(() => {
+      hitung--;
+
+      if(hitung > 0){
+        text.innerText = hitung;
+        bunyi(700, 0.12);     // 3,2,1
+        text.style.animation = "none";
+        text.offsetHeight;
+        text.style.animation = "zoom 0.5s ease";
+      }
+      else if(hitung === 0){
+        text.innerText = "MULAI!";
+        bunyi(900, 0.25);     // MULAI
+      }
+      else{
+        clearInterval(timer);
+        overlay.style.display = "none";
+
+        game.style.display = "block";
+        ambilSoalPlayer("kiri");
+        ambilSoalPlayer("kanan");
+      }
+    }, 1000);
+  }
+
+  let gameSelesai = false;
+  let posisi = 255;
+  const penanda = document.getElementById("penanda");
+
+
+/* ================= BANK SOAL ================= */
+
+  const bankSoal = {
+    legena: [
+      { soal: "ꦲꦤ", jawaban: "ana" },
+      { soal: "ꦫꦗ", jawaban: "raja" },
+      { soal: "ꦕꦫ", jawaban: "cara" },
+      { soal: "ꦭꦮ", jawaban: "lawa" },
+      { soal: "ꦩꦠ", jawaban: "mata" },
+      { soal: "ꦥꦢ", jawaban: "pada" },
+      { soal: "ꦥꦝ", jawaban: "padha" },
+      { soal: "ꦫꦏ", jawaban: "raka" },
+      { soal: "ꦫꦒ", jawaban: "raga" },
+      { soal: "ꦫꦤ", jawaban: "rana" },
+      { soal: "ꦫꦢ", jawaban: "rada" },
+      { soal: "ꦫꦱ", jawaban: "rasa" },
+      { soal: "ꦏꦫ", jawaban: "kara" },
+      { soal: "ꦱꦥ", jawaban: "sapa" },
+      { soal: "ꦏꦤ", jawaban: "kana" },
+      { soal: "ꦩꦫ", jawaban: "mara" },
+      { soal: "ꦧꦭ", jawaban: "bala" },
+      { soal: "ꦧꦠ", jawaban: "bata" },
+      { soal: "ꦤꦠ", jawaban: "nata" },
+      { soal: "ꦤꦭ", jawaban: "nala" }
+    ],
+    sandhangan: [
+      { soal: "ꦱꦲꦶꦏꦶ", jawaban: "saiki" },
+      { soal: "ꦱꦶꦮꦶ", jawaban: "siwi" },
+      { soal: "ꦱꦶꦗꦶ", jawaban: "siji" },
+      { soal: "ꦏꦺꦤꦺ", jawaban: "kene" },
+      { soal: "ꦩꦺꦤꦺꦏ꧀", jawaban: "menek" },
+      { soal: "ꦠꦸꦏꦸ", jawaban: "tuku" },
+      { soal: "ꦱꦸꦤꦸ", jawaban: "sunu" },
+      { soal: "ꦱꦼꦤꦼꦁ", jawaban: "seneng" },
+      { soal: "ꦒꦼꦱꦼꦁ", jawaban: "geseng" },
+      { soal: "ꦭꦺꦴꦫꦺ", jawaban: "loro" },
+      { soal: "ꦠꦺꦴꦏꦺꦴ", jawaban: "toko" },
+      { soal: "ꦫꦃꦩꦠ꧀", jawaban: "rahmat" },
+      { soal: "ꦲꦺꦴꦩꦃ", jawaban: "omah" },
+      { soal: "ꦊꦩꦃ", jawaban: "lemah" },
+      { soal: "ꦱꦂꦠ", jawaban: "sarta" },
+      { soal: "ꦏꦼꦂꦠꦱ꧀", jawaban: "kertas" },
+      { soal: "ꦧꦸꦧꦸꦂ", jawaban: "bubur" },
+      { soal: "ꦩꦧꦸꦂ", jawaban: "mabur" },
+      { soal: "ꦩꦁꦒꦺꦴꦤ꧀", jawaban: "manggon" },
+      { soal: "ꦧꦁꦏꦸ", jawaban: "bangku" },
+      { soal: "ꦥꦸꦕꦸꦁ", jawaban: "pucung" },
+      { soal: "ꦩꦸꦭꦁ", jawaban: "mulang" },
+      { soal: "ꦠꦏꦺꦴꦤ꧀", jawaban: "takon" },
+      { soal: "ꦥꦿꦲꦫ", jawaban: "prahara" },
+      { soal: "ꦏꦥꦿꦃ", jawaban: "kaprah" },
+      { soal: "ꦏ‍ꦽꦠꦼꦒ꧀", jawaban: "kreteg" },
+      { soal: "ꦩꦢꦾ", jawaban: "madya" },
+      { soal: "ꦩꦁꦏꦾ", jawaban: "mangkya" }
+    ],
+    pasangan: [
+      { soal: "ꦲꦩ꧀ꦧꦼꦁ", jawaban: "ambeng" },
+      { soal: "ꦲꦩ꧀ꦧꦾꦂ", jawaban: "ambyar" },
+      { soal: "ꦧꦤ꧀ꦝꦸꦭ꧀", jawaban: "bandhul" },
+      { soal: "ꦧꦤ꧀ꦠꦭ꧀", jawaban: "bantal" },
+      { soal: "ꦧꦤ꧀ꦝꦺꦴꦠ꧀", jawaban: "bandhot" },
+      { soal: "ꦧꦚ꧀ꦕꦺꦠ꧀", jawaban: "bancet" },
+      { soal: "ꦧꦤ꧀ꦠꦼꦂ", jawaban: "banter" },
+      { soal: "ꦒꦼꦤ꧀ꦢꦺꦫ", jawaban: "gendera" },
+      { soal: "ꦧ꧀ꦭꦫꦏ꧀", jawaban: "blarak" },
+      { soal: "ꦕꦤ꧀ꦝꦏ꧀", jawaban: "candhak" },
+      { soal: "ꦕꦩ꧀ꦥꦸꦂ", jawaban: "campur" },
+      { soal: "ꦕꦺꦤ꧀ꦛꦺꦴꦁ", jawaban: "centhong" },
+      { soal: "ꦱꦼꦧ꧀ꦭꦏ꧀", jawaban: "seblak" },
+      { soal: "ꦕꦶꦧ꧀ꦭꦺꦴꦤ꧀", jawaban: "ciblon" },
+      { soal: "ꦕ꧀ꦭꦤ", jawaban: "clana" },
+      { soal: "ꦠꦥ꧀ꦭꦏ꧀", jawaban: "taplak" },
+      { soal: "ꦗꦼꦩ꧀ꦥꦺꦴꦭ꧀", jawaban: "jempol" },
+      { soal: "ꦝꦼꦤ꧀ꦢ", jawaban: "dhenda" },
+      { soal: "ꦲꦺꦤ꧀ꦢꦱ꧀", jawaban: "endas" },
+      { soal: "ꦲꦺꦩ꧀ꦧꦺꦂ", jawaban: "ember" },
+      { soal: "ꦲꦼꦤ꧀ꦝꦺꦴꦒ꧀", jawaban: "endhog" },
+      { soal: "ꦲꦺꦤ꧀ꦛꦺꦁ", jawaban: "entheng" },
+      { soal: "ꦲꦼꦤ꧀ꦠꦺꦏ꧀", jawaban: "entek" },
+      { soal: "ꦲꦼꦩ꧀ꦥꦸꦏ꧀", jawaban: "empuk" },
+      { soal: "ꦒꦸꦤ꧀ꦝꦸꦭ꧀", jawaban: "gundhul" },
+      { soal: "ꦒꦺꦤ꧀ꦝꦺꦴꦁ", jawaban: "gendhong" },
+      { soal: "ꦠꦺꦩ꧀ꦧꦺꦴꦏ꧀", jawaban: "tembok" },
+      { soal: "ꦒꦩ꧀ꦥꦁ", jawaban: "gampang" },
+      { soal: "ꦗꦤ꧀ꦠꦸꦁ", jawaban: "jantung" },
+      { soal: "ꦗꦼꦩ꧀ꦧꦂ", jawaban: "jembar" },
+      { soal: "ꦏꦤ꧀ꦝꦱ꧀", jawaban: "kandhas" },
+      { soal: "ꦏꦤ꧀ꦢꦼꦭ꧀", jawaban: "kandel" },
+      { soal: "ꦏꦤ꧀ꦝꦁ", jawaban: "kandhang" },
+      { soal: "ꦏ꧀ꦭꦧꦁ", jawaban: "klabang" },
+      { soal: "ꦏ꧀ꦭꦪꦃ", jawaban: "klayah" },
+      { soal: "ꦏ꧀ꦭꦪꦸ", jawaban: "klayu" },
+      { soal: "ꦏ꧀ꦭꦮꦸ", jawaban: "klawu" },
+      { soal: "ꦏ꧀ꦭꦼꦧꦸ", jawaban: "klebu" },
+      { soal: "ꦏ꧀ꦭꦼꦔꦼꦂ", jawaban: "klenger" },
+      { soal: "ꦏ꧀ꦭꦸꦧꦤ꧀", jawaban: "kluban" },
+      { soal: "ꦏ꧀ꦭꦸꦮꦸꦱ꧀", jawaban: "kluwus" },
+      { soal: "ꦏꦸꦩ꧀ꦥꦸꦭ꧀", jawaban: "kumpul" },
+      { soal: "ꦊꦩ꧀ꦥꦼꦁ", jawaban: "lempeng" },
+      { soal: "ꦭꦚ꧀ꦕꦂ", jawaban: "lancar" },
+      { soal: "ꦭꦺꦴꦚ꧀ꦗꦺꦴꦁ", jawaban: "lonjong" },
+      { soal: "ꦭꦺꦴꦚ꧀ꦕꦺꦁ", jawaban: "lonceng" },
+      { soal: "ꦩ꧀ꦭꦏꦸ", jawaban: "mlaku" },
+      { soal: "ꦩꦩ꧀ꦥꦶꦂ", jawaban: "mampir" },
+      { soal: "ꦩꦚ꧀ꦗꦸꦂ", jawaban: "manjur" },
+      { soal: "ꦩꦚ꧀ꦕꦭ꧀", jawaban: "mancal" },
+      { soal: "ꦩꦤ꧀ꦠꦺꦤ꧀", jawaban: "manten" },
+      { soal: "ꦩꦼꦤ꧀ꦝꦺꦩ꧀", jawaban: "mendhem" },
+      { soal: "ꦩꦶꦤ꧀ꦢꦃ", jawaban: "mindah" },
+      { soal: "ꦩꦶꦩ꧀ꦧꦂ", jawaban: "mimbar" },
+      { soal: "ꦩ꧀ꦭꦛꦶ", jawaban: "mlathi" },
+      { soal: "ꦩꦺꦴꦤ꧀ꦝꦺꦴꦏ꧀", jawaban: "mondhok" },
+      { soal: "ꦤꦤ꧀ꦢꦸꦂ", jawaban: "nandur" },
+      { soal: "ꦤꦺꦩ꧀ꦥꦺꦭ꧀", jawaban: "nempel" },
+      { soal: "ꦲꦺꦴꦩ꧀ꦥꦺꦴꦁ", jawaban: "ompong" },
+      { soal: "ꦲꦺꦴꦤ꧀ꦠꦺꦭ꧀", jawaban: "ontel" },
+      { soal: "ꦲꦺꦴꦚ꧀ꦕꦺꦏ꧀", jawaban: "oncek" },
+      { soal: "ꦥ꧀ꦭꦼꦱꦶꦂ", jawaban: "plesir" },
+      { soal: "ꦥꦚ꧀ꦗꦼꦂ", jawaban: "panjer" },
+      { soal: "ꦥꦚ꧀ꦕꦶꦁ", jawaban: "pancing" },
+      { soal: "ꦫꦩ꧀ꦥꦸꦁ", jawaban: "rampung" },
+      { soal: "ꦫꦺꦴꦤ꧀ꦝ", jawaban: "rondha" },
+      { soal: "ꦱꦶꦩ꧀ꦥꦼꦤ꧀", jawaban: "simpen" },
+      { soal: "ꦱꦶꦤ꧀ꦝꦺꦤ꧀", jawaban: "sindhen" },
+      { soal: "ꦱ꧀ꦭꦺꦴꦫꦺꦴꦏ꧀", jawaban: "slorok" },
+      { soal: "ꦱ꧀ꦭꦩꦼꦠ꧀", jawaban: "slamet" },
+      { soal: "ꦱ꧀ꦮꦶꦮꦶ", jawaban: "swiwi" },
+      { soal: "ꦱ꧀ꦮꦫ", jawaban: "swara" },
+      { soal: "ꦠꦤ꧀ꦢꦸꦂ", jawaban: "tandur" },
+      { soal: "ꦠꦤ꧀ꦝꦶꦁ", jawaban: "tandhing" },
+      { soal: "ꦠꦺꦤ꧀ꦝ", jawaban: "tendha" },
+      { soal: "ꦠꦼꦩ꧀ꦧꦁ", jawaban: "tembang" },
+      { soal: "ꦠꦩ꧀ꦧꦁ", jawaban: "tambang" },    
+      { soal: "ꦏꦼꦩ꧀ꦧꦁ", jawaban: "kembang" },
+      { soal: "ꦠꦺꦩ꧀ꦧꦺꦴꦏ꧀", jawaban: "tembok" },
+      { soal: "ꦲꦺꦴꦩ꧀ꦧꦏ꧀", jawaban: "ombak" }
+    ],
+    talingtarung: [
+      { soal: "ꦲꦺꦴꦩ꧀ꦧ", jawaban: "amba" },
+      { soal: "ꦲꦺꦴꦤ꧀ꦝ", jawaban: "andha" },
+      { soal: "ꦧꦺꦴꦤ꧀ꦝ", jawaban: "bandha" },
+      { soal: "ꦏꦺꦴꦤ꧀ꦝ", jawaban: "kandha" },
+      { soal: "ꦩꦺꦴꦚ꧀ꦕ", jawaban: "manca" },
+      { soal: "ꦧꦺꦴꦁꦱ", jawaban: "bangsa" },
+      { soal: "ꦏꦺꦴꦚ꧀ꦕ", jawaban: "kanca" },
+      { soal: "ꦱꦺꦴꦚ꧀ꦗ", jawaban: "sanja" },
+      { soal: "ꦥꦺꦴꦚ꧀ꦕ", jawaban: "panca" },
+      { soal: "ꦠꦺꦴꦩ꧀ꦧ", jawaban: "tamba" },
+      { soal: "ꦩꦺꦴꦁꦱ", jawaban: "mangsa" },
+      { soal: "ꦒꦺꦴꦤ꧀ꦢ", jawaban: "ganda" },
+      { soal: "ꦠꦺꦴꦁꦒ", jawaban: "tangga" },
+      { soal: "ꦤꦺꦴꦁꦏ", jawaban: "nangka" },
+      { soal: "ꦕꦺꦴꦤ꧀ꦢꦿ", jawaban: "candra" },
+      { soal: "ꦫꦺꦴꦤ꧀ꦝ", jawaban: "randha" },
+      { soal: "ꦗꦺꦴꦁꦒ", jawaban: "jangga" },
+      { soal: "ꦭꦺꦴꦁꦏ", jawaban: "langka" }
+    ],
+    dwipurwa: [
+      { soal: "ꦭꦶꦭꦶꦫꦸ", jawaban: "leliru" },
+      { soal: "ꦠꦼꦠꦼꦭꦸ", jawaban: "tetelu" },
+      { soal: "ꦏꦺꦴꦏꦺꦴꦤꦁ", jawaban: "kekonang" },
+      { soal: "ꦱꦸꦱꦸꦒꦸꦃ", jawaban: "sesuguh" },
+      { soal: "ꦱꦶꦱꦶꦭꦶꦃ", jawaban: "sesilih" },
+      { soal: "ꦠꦠꦩ꧀ꦧ", jawaban: "tetamba" },
+      { soal: "ꦩꦩꦁꦱ", jawaban: "memangsa" },
+      { soal: "ꦒꦒꦤ꧀ꦢ", jawaban: "geganda" },
+      { soal: "ꦠꦠꦁꦒ", jawaban: "tetangga" },
+      { soal: "ꦮꦮꦂꦠ", jawaban: "wewarta" },
+      { soal: "ꦭꦸꦭꦸꦁꦒꦸꦃ", jawaban: "lelungguh" },
+      { soal: "ꦭꦶꦭꦶꦁꦒꦶꦃ", jawaban: "lelinggih" },
+      { soal: "ꦮꦮꦂꦤꦶ", jawaban: "wewarni" },
+      { soal: "ꦭꦶꦭꦶꦤ꧀ꦠꦸ", jawaban: "lelintu" },
+      { soal: "ꦭꦭꦚ꧀ꦕꦸꦂ", jawaban: "lelancur" },
+      { soal: "ꦊꦊꦩ꧀ꦧꦸꦠ꧀", jawaban: "lelembut" },
+      { soal: "ꦭꦸꦭꦸꦩ꧀ꦧꦤ꧀", jawaban: "lelumban" },
+      { soal: "ꦥꦶꦥꦶꦤ꧀ꦝꦤ꧀", jawaban: "pepindhan" },
+      { soal: "ꦧꦸꦧꦸꦏ", jawaban: "bebuka" },
+      { soal: "ꦠꦸꦠꦸꦏꦸ", jawaban: "tetuku" },
+      { soal: "ꦏꦏꦚ꧀ꦕꦤ꧀", jawaban: "kekancan" }
+    ],
+    andhahan: [
+      { soal: "ꦲꦤ꧀ꦢꦢꦂ", jawaban: "ndadar" },
+      { soal: "ꦲꦤ꧀ꦝꦼꦝꦼꦂ", jawaban: "ndhedher" },
+      { soal: "ꦲꦩ꧀ꦧꦸꦮꦁ", jawaban: "mbuwang" },
+      { soal: "ꦲꦸꦢꦤ꧀ꦤ", jawaban: "udana" },
+      { soal: "ꦒꦫꦶꦁꦔ", jawaban: "garinga" },
+      { soal: "ꦧꦶꦱꦲ", jawaban: "bisaa" },
+      { soal: "ꦩꦫꦲ", jawaban: "maraa" },
+      { soal: "ꦮꦤꦶꦪ", jawaban: "wania" },
+      { soal: "ꦝꦺꦮꦺꦪ", jawaban: "dhewea" },
+      { soal: "ꦤꦶꦫꦸꦮ", jawaban: "nirua" },
+      { soal: "ꦤꦮꦸꦮ", jawaban: "nawua" },
+      { soal: "ꦩꦝꦤ꧀ꦤꦶ", jawaban: "madhani" },
+      { soal: "ꦗꦒꦺꦴꦮꦤ꧀", jawaban: "jagoan" },
+      { soal: "ꦠꦭꦺꦤ꧀ꦤꦤ", jawaban: "talenana" },
+      { soal: "ꦩꦏꦏ꧀ꦏꦏꦺ", jawaban: "makakake" },
+      { soal: "ꦒꦺꦴꦭꦺꦏ꧀ꦤ", jawaban: "golekna" },
+      { soal: "ꦗꦸꦥꦸꦏ꧀ꦤ", jawaban: "jupukna" },
+      { soal: "ꦲꦤ꧀ꦢꦧ꧀ꦭꦼꦒ꧀", jawaban: "ndableg" },
+      { soal: "ꦲꦤ꧀ꦝꦺꦴꦝꦺꦴꦒ꧀", jawaban: "ndhodhog" },
+      { soal: "ꦲꦩ꧀ꦧꦿꦺꦏꦠ꧀", jawaban: "mbrekat" },
+      { soal: "ꦲꦁꦒꦺꦴꦝꦺꦴꦒ꧀", jawaban: "nggodhog" },
+      { soal: "ꦲꦁꦒꦮ", jawaban: "nggawa" },
+      { soal: "ꦲꦩ꧀ꦧꦭꦺꦏ꧀ꦤ", jawaban: "mbalekna" },
+      { soal: "ꦲꦩ꧀ꦧꦸꦤ꧀ꦠꦼꦭ꧀", jawaban: "mbuntel" },
+      { soal: "ꦭꦸꦔꦲ", jawaban: "lungaa" },
+      { soal: "ꦧꦭꦶꦪ", jawaban: "balia" },
+      { soal: "ꦫꦺꦤꦺꦪ", jawaban: "renea" },
+      { soal: "ꦔꦗꦶꦪ", jawaban: "ngajia" },
+      { soal: "ꦔꦱꦺꦴꦮ", jawaban: "ngasoa" },
+      { soal: "ꦤꦸꦩ꧀ꦥꦏ꧀ꦏꦺ", jawaban: "numpake" },
+      { soal: "ꦤꦺꦩ꧀ꦥ꧀ꦭꦺꦏ꧀ꦏꦶ", jawaban: "nempleki" }
+    ],
+    angka: [
+      { soal: "꧑꧔꧒꧓", jawaban: "1423" },
+      { soal: "꧕꧖꧗꧘", jawaban: "5678" },
+      { soal: "꧙꧑꧒꧓", jawaban: "9123" },
+      { soal: "꧔꧕꧖꧗", jawaban: "4567" },
+      { soal: "꧘꧙꧑꧒", jawaban: "8912" },
+      { soal: "꧓꧔꧕꧖", jawaban: "3456" },
+      { soal: "꧗꧘꧙꧑", jawaban: "7891" },
+      { soal: "꧒꧓꧔꧕", jawaban: "2345" },
+      { soal: "꧖꧗꧘꧙", jawaban: "6789" },
+      { soal: "꧑꧓꧕꧗", jawaban: "1357" },
+      { soal: "꧒꧔꧖꧘", jawaban: "2468" },
+      { soal: "꧙꧗꧕꧓", jawaban: "9753" },
+      { soal: "꧘꧖꧔꧒", jawaban: "8642" },
+      { soal: "꧑꧔꧗꧙", jawaban: "1479" },
+      { soal: "꧒꧕꧘꧙", jawaban: "2589" },
+      { soal: "꧓꧖꧗꧙", jawaban: "3679" },
+      { soal: "꧑꧒꧕꧘", jawaban: "1258" },
+      { soal: "꧔꧖꧗꧘", jawaban: "4678" },
+      { soal: "꧓꧕꧖꧙", jawaban: "3569" },
+      { soal: "꧑꧓꧖꧘", jawaban: "1368" },
+      { soal: "꧒꧔꧗꧘", jawaban: "2478" },
+      { soal: "꧕꧗꧘꧙", jawaban: "5789" },
+      { soal: "꧑꧕꧖꧗", jawaban: "1567" },
+      { soal: "꧒꧓꧖꧘", jawaban: "2368" },
+      { soal: "꧔꧕꧗꧙", jawaban: "4579" }
+    ],
+    swara: [
+      { soal: "ꦄꦭ꧀ꦒꦺꦴꦫꦶꦠ꧀ꦩ", jawaban: "algoritma" },
+      { soal: "ꦆꦩꦸꦤꦶꦠꦱ꧀", jawaban: "imunitas" },
+      { soal: "ꦆꦩꦸꦤꦶꦱꦱꦶ", jawaban: "imunisasi" },
+      { soal: "ꦌꦏꦺꦴꦱꦶꦱ꧀ꦠꦼꦩ꧀", jawaban: "ekosistem" },
+      { soal: "ꦌꦭꦺꦩꦺꦤ꧀", jawaban: "elemen" },
+      { soal: "ꦈꦩꦠ꧀", jawaban: "umat" },
+      { soal: "ꦎꦧꦺꦱꦶꦠꦱ꧀", jawaban: "obesitas" },
+      { soal: "ꦎꦏ꧀ꦠꦺꦴꦧꦼꦂ", jawaban: "oktober" },
+      { soal: "ꦌꦫꦺꦴꦥꦃ", jawaban: "eropa" },
+      { soal: "ꦄꦫꦧ꧀", jawaban: "arab" },
+      { soal: "ꦆꦤ꧀ꦣꦺꦴꦤꦺꦱꦶꦪꦃ", jawaban: "indonesia" },
+      { soal: "ꦄꦒꦸꦱ꧀ꦠꦸꦱ꧀", jawaban: "agustus" },
+      { soal: "ꦆꦧꦿꦲꦶꦩ꧀", jawaban: "Ibrahim" },
+      { soal: "ꦈꦱ꧀ꦩꦤ꧀", jawaban: "usman" },
+      { soal: "ꦈꦩꦂ", jawaban: "umar" },
+      { soal: "ꦆꦁꦒꦿꦶꦱ꧀", jawaban: "Inggris" },
+      { soal: "ꦄꦥꦿꦶꦭ꧀", jawaban: "april" },
+      { soal: "ꦆꦢꦿꦶꦱ꧀", jawaban: "idris" }
+    ],
+    rekan: [
+      { soal: "ꦥ꦳ꦶꦠꦿꦃ", jawaban: "fitrah" },
+      { soal: "ꦥ꦳ꦸꦁꦱꦶ", jawaban: "fungsi" },
+      { soal: "ꦥ꦳ꦶꦂꦩꦤ꧀", jawaban: "firman" },
+      { soal: "ꦥ꦳ꦲꦩ꧀", jawaban: "faham" },
+      { soal: "ꦢ꦳ꦶꦏꦶꦂ", jawaban: "dzikir" },
+      { soal: "ꦗ꦳ꦏꦠ꧀", jawaban: "zakat" },
+      { soal: "ꦒ꦳ꦲꦶꦧ꧀", jawaban: "ghaib" },
+      { soal: "ꦏ꦳ꦧꦂ", jawaban: "khabar" },
+      { soal: "ꦢ꦳ꦸꦲꦸꦂ", jawaban: "dzuhur" },
+      { soal: "ꦥ꦳ꦠꦶꦩꦃ", jawaban: "fatimah" },
+      { soal: "ꦥ꦳ꦭ꧀ꦱꦥ꦳ꦃ", jawaban: "falsafah" },
+      { soal: "ꦏ꦳ꦶꦠꦤ꧀", jawaban: "khitan" },
+      { soal: "ꦥ꦳ꦂꦩꦱꦶ", jawaban: "farmasi" },
+      { soal: "ꦗ꦳ꦶꦤ", jawaban: "zina" },
+      { soal: "ꦮ꦳ꦶꦠꦩꦶꦤ꧀", jawaban: "vitamin" }
+    ],
+    murda: [
+      { soal: "ꦑꦚ꧀ꦗꦼꦁꦯꦸꦤꦤ꧀", jawaban: "Kanjeng Sunan" },
+      { soal: "ꦦꦏꦸ ꦨꦸꦮꦤ", jawaban: "Paku Buwana" },
+      { soal: "ꦯꦸꦫꦏꦂꦠ", jawaban: "Surakarta" },
+      { soal: "ꦩꦱ꧀ꦯꦸꦢꦂꦱꦤ", jawaban: "Mas Sudarsana" },
+      { soal: "ꦫꦱꦼꦏ꧀ꦱꦶꦡꦿꦶꦗꦛ", jawaban: "Raseksi Trijatha" },
+      { soal: "ꦓꦸꦱ꧀ꦡꦶꦄꦭ꧀ꦭꦃ", jawaban: "Gusti Allah" },
+      { soal: "ꦟꦸꦂꦲꦶꦢꦪꦠ꧀", jawaban: "Nur Hidayat" },
+      { soal: "ꦑꦚ꧀ꦗꦼꦁꦓꦸꦱ꧀ꦠꦶ", jawaban: "Kanjeng Gusti" },
+      { soal: "ꦩꦁꦑꦸꦤꦒꦫ", jawaban: "Mangkunagara" },
+      { soal: "ꦢꦶꦦꦤꦼꦒꦫ", jawaban: "Dipanegara" },
+      { soal: "ꦦꦿꦧꦸꦨꦿꦮꦶꦗꦪ", jawaban: "Prabu Brawijaya" },
+      { soal: "ꦑꦸꦛꦑꦼꦝꦶꦫꦶ", jawaban: "Kutha Kedhiri" },
+      { soal: "ꦑꦸꦛꦯꦼꦩꦫꦁ", jawaban: "Kutha Semarang" },
+      { soal: "ꦑꦸꦛꦥꦛꦶ", jawaban: "Kutha Pati" },
+      { soal: "ꦫꦢꦺꦤ꧀ꦡꦸꦠꦸꦏ", jawaban: "Raden Tetuka" },
+      { soal: "ꦫꦢꦺꦤ꧀ꦟꦏꦸꦭ", jawaban: "Raden Nakula" },
+      { soal: "ꦫꦢꦺꦤ꧀ꦨꦿꦠꦱꦺꦤ", jawaban: "Raden Bratasena" }
+    ]
+  };
+  let modeAktif = "";
+
+  const soalAktif = {
+    kiri: null,
+    kanan: null
+  };
+
+  function pilihMode(mode){
+    modeAktif = mode;
+    mulaiGame();
+  }
+
+  function ambilSoalPlayer(player){
+    const daftar = bankSoal[modeAktif];
+    const index = Math.floor(Math.random() * daftar.length);
+
+    soalAktif[player] = daftar[index];
+
+    document
+      .querySelector(`.panel.${player} .panel-header`)
+      .innerText = soalAktif[player].soal;
+
+    // reset input player itu saja
+    input[player] = "";
+    document
+      .querySelector(`.panel.${player} .jawaban`)
+      .value = "";
+  }
+
+  const input = {
+    kiri: "",
+    kanan: ""
+  };
+
+  const keyboardState = {
+    kiri: {
+      shift: false,
+      angka: false
+    },
+    kanan: {
+      shift: false,
+      angka: false
+    }
+  };
+
+  document.querySelectorAll(".keypad button").forEach(btn=>{
+    btn.addEventListener("pointerdown", e=>{
+      e.preventDefault(); // WAJIB agar multi-touch jalan
+
+      const keypad = btn.closest(".keypad");
+      const player = keypad.dataset.player;
+      const boxJawaban = keypad.closest(".panel").querySelector(".jawaban");
+      const teks = btn.innerText;
+
+      // SHIFT
+      if(btn.classList.contains("shift")){
+        keyboardState[player].shift = !keyboardState[player].shift;
+        toggleShift(keypad, keyboardState[player].shift);
+        btn.style.background = keyboardState[player].shift ? "#64b5f6" : "#cfd8dc";
+        return;
+      }
+
+      // MODE ANGKA
+      if(btn.classList.contains("mode")){
+        keyboardState[player].angka = !keyboardState[player].angka;
+        toggleSymbol(keypad, keyboardState[player].angka);
+        btn.innerText = keyboardState[player].angka ? "123" : "/?,";
+        btn.style.background = keyboardState[player].angka ? "#4caf50" : "#9e9e9e";
+        return;
+      }
+
+      // CLEAR SEMUA
+      if(teks === "C"){
+        input[player] = "";
+      }
+      // GO
+      else if(teks === "GO"){
+        cekJawaban(player);
+        return;
+      }
+      // SPASI
+      else if(teks === "␣"){
+        input[player] += " ";
+      }
+      // DELETE 1 HURUF
+      else if(teks === "⌫"){
+        input[player] = input[player].slice(0, -1);
+      }
+      // HURUF BIASA
+      else{
+        input[player] += teks;
+      }
+
+      boxJawaban.value = input[player];
+    });
+  });
+
+  function toggleShift(keypad, aktif){
+    const hurufBtns = keypad.querySelectorAll(".huruf");
+
+    hurufBtns.forEach(btn=>{
+      if(aktif){
+        btn.innerText = btn.dataset.key.toUpperCase();
+      } else {
+        btn.innerText = btn.dataset.key.toLowerCase();
+      }
+    });
+  }
+
+  function toggleSymbol(keypad, aktif){
+    const angkaBtns = keypad.querySelectorAll(".angka");
+
+    const angkaNormal = ["1","2","3","4","5","6","7","8","9","0"];
+    const simbol = ["-","(",")","/","\"","'",";",":","!","?"];
+
+    angkaBtns.forEach((btn, i)=>{
+      btn.innerText = aktif ? simbol[i] : angkaNormal[i];
+    });
+  }
+
+  function cekJawaban(player){
+    if(!soalAktif[player]) return;
+
+    const boxJawaban = document
+      .querySelector(`.panel.${player} .jawaban`);
+
+    // BENAR
+    if(
+      input[player].toLowerCase() ===
+      soalAktif[player].jawaban.toLowerCase()
+    ){bunyi(1000, 0.15);   // BENAR
+      if(player === "kiri"){
+        tarikKiri();
+      } else {
+        tarikKanan();
+      }
+
+      ambilSoalPlayer(player);
+    }
+    // SALAH
+    else{bunyi(300, 0.35);    // SALAH
+      boxJawaban.classList.add("salah");
+
+      setTimeout(()=>{
+        boxJawaban.classList.remove("salah");
+        boxJawaban.value = "";
+        input[player] = "";
+      }, 600);
+    }
+  }
+
+  function tarikKiri(){
+    if(gameSelesai) return;
+    posisi = Math.max(140, posisi - 25);
+    penanda.setAttribute("x", posisi);
+    cekMenang();
+  }
+
+  function tarikKanan(){
+    if(gameSelesai) return;
+    posisi = Math.min(370, posisi + 25);
+    penanda.setAttribute("x", posisi);
+    cekMenang();
+  }
+
+  function cekMenang(){
+    if(gameSelesai) return;
+
+    if(posisi <= 140){
+      tampilMenang("biru");
+    }
+    if(posisi >= 370){
+      tampilMenang("merah");
+    }
+  }
+
+  function tampilMenang(pemenang){
+    bunyiMenang();
+    gameSelesai = true;
+
+    document.getElementById("winOverlay").style.display = "flex";
+
+    const teks = document.getElementById("winText");
+    const badan = document.getElementById("warnaBadan");
+
+    if(pemenang === "biru"){
+      teks.innerText = "Player Biru Menang!";
+      badan.setAttribute("fill", "#0b1a6d");
+    }else{
+      teks.innerText = "Player Merah Menang!";
+      badan.setAttribute("fill", "#7a001c");
+    }
+  }
+
+  function mainLagi(){
+    // tutup overlay menang
+    document.getElementById("winOverlay").style.display = "none";
+
+    // sembunyikan area game
+    document.getElementById("gameArea").style.display = "none";
+
+    // tampilkan menu pilihan mode
+    document.getElementById("mode").style.display = "block";
+
+    // reset status game
+    gameSelesai = false;
+
+    // reset posisi penanda ke tengah
+    posisi = 255;
+    penanda.setAttribute("x", posisi);
+  }
+
+  function kembaliMenu(){
+    // tutup overlay menang jika ada
+    document.getElementById("winOverlay").style.display = "none";
+
+    // sembunyikan game
+    document.getElementById("gameArea").style.display = "none";
+
+    // tampilkan menu mode
+    document.getElementById("mode").style.display = "block";
+
+    // reset status game
+    gameSelesai = false;
+    posisi = 255;
+    penanda.setAttribute("x", posisi);
+
+    // reset input & soal
+    soalAktif.kiri = null;
+    soalAktif.kanan = null;
+    input.kiri = "";
+    input.kanan = "";
+
+    document.querySelectorAll(".jawaban").forEach(j => j.value = "");
+  }
+
+</script>
+
+
+</body>
+</html>
