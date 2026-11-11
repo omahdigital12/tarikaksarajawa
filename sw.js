@@ -1,4 +1,5 @@
-const CACHE_NAME = "tarik-tambang-v1.9";
+
+const CACHE_NAME = "tarik-tambang-v2.0";
 
 const FILES_TO_CACHE = [
   "./",
@@ -8,6 +9,7 @@ const FILES_TO_CACHE = [
   "./icons/icon-512.png"
 ];
 
+// INSTALL
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -16,6 +18,7 @@ self.addEventListener("install", event => {
   );
 });
 
+// ACTIVATE
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys => {
@@ -28,6 +31,7 @@ self.addEventListener("activate", event => {
   );
 });
 
+// FETCH
 self.addEventListener("fetch", event => {
   if (event.request.method !== "GET") return;
 
@@ -35,6 +39,31 @@ self.addEventListener("fetch", event => {
 
   if (url.origin !== self.location.origin) return;
 
+  // HALAMAN: utamakan versi terbaru dari internet
+  if (event.request.mode === "navigate") {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          if (response.ok) {
+            const salinan = response.clone();
+
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, salinan);
+            });
+          }
+
+          return response;
+        })
+        .catch(async () => {
+          return await caches.match(event.request) ||
+                 await caches.match("./index.html");
+        })
+    );
+
+    return;
+  }
+
+  // FILE LAIN: utamakan cache agar tetap bisa offline
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
@@ -49,8 +78,6 @@ self.addEventListener("fetch", event => {
         }
 
         return response;
-      }).catch(() => {
-        return caches.match("./index.html");
       });
     })
   );
