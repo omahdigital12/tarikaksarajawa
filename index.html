@@ -1247,57 +1247,115 @@
     }
   };
 
-  document.querySelectorAll(".keypad button").forEach(btn=>{
-    btn.addEventListener("pointerdown", e=>{
-      e.preventDefault(); // WAJIB agar multi-touch jalan
+  
+// TIMER RESET JAWABAN MASING-MASING PEMAIN
+const resetTimer = {
+  kiri: null,
+  kanan: null
+};
 
-      const keypad = btn.closest(".keypad");
-      const player = keypad.dataset.player;
-      const boxJawaban = keypad.closest(".panel").querySelector(".jawaban");
-      const teks = btn.innerText;
+// EVENT KEYBOARD
+document.querySelectorAll(".keypad button").forEach(btn => {
 
-      // SHIFT
-      if(btn.classList.contains("shift")){
-        keyboardState[player].shift = !keyboardState[player].shift;
-        toggleShift(keypad, keyboardState[player].shift);
-        btn.style.background = keyboardState[player].shift ? "#64b5f6" : "#cfd8dc";
-        return;
+  btn.addEventListener("pointerdown", function(e) {
+
+    // Abaikan klik kanan mouse
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+
+    // Cegah event sentuh berubah menjadi click
+    e.preventDefault();
+
+    const keypad = this.closest(".keypad");
+    const player = keypad.dataset.player;
+    const boxJawaban = keypad.closest(".panel")
+      .querySelector(".jawaban");
+
+    // Jangan menerima input jika game selesai
+    if (gameSelesai) return;
+
+    // Jangan menerima input selama animasi jawaban salah
+    if (resetTimer[player] !== null) return;
+
+    const teks = this.textContent.trim();
+
+    // SHIFT
+    if (this.classList.contains("shift")) {
+      keyboardState[player].shift =
+        !keyboardState[player].shift;
+
+      toggleShift(keypad, keyboardState[player].shift);
+
+      this.style.background =
+        keyboardState[player].shift ? "#64b5f6" : "#cfd8dc";
+
+      return;
+    }
+
+    // MODE ANGKA / SIMBOL
+    if (this.classList.contains("mode")) {
+      keyboardState[player].angka =
+        !keyboardState[player].angka;
+
+      toggleSymbol(keypad, keyboardState[player].angka);
+
+      this.textContent =
+        keyboardState[player].angka ? "123" : "/?,";
+
+      this.style.background =
+        keyboardState[player].angka ? "#4caf50" : "#9e9e9e";
+
+      return;
+    }
+
+    // CLEAR
+    if (this.classList.contains("c")) {
+      input[player] = "";
+    }
+
+    // GO
+    else if (this.classList.contains("go")) {
+      cekJawaban(player);
+      return;
+    }
+
+    // SPASI
+    else if (this.classList.contains("space")) {
+      input[player] += " ";
+    }
+
+    // DELETE
+    else if (this.classList.contains("del")) {
+      input[player] = input[player].slice(0, -1);
+    }
+
+    // HURUF
+    else if (this.dataset.key) {
+      let huruf = this.dataset.key;
+
+      if (keyboardState[player].shift) {
+        huruf = huruf.toUpperCase();
       }
 
-      // MODE ANGKA
-      if(btn.classList.contains("mode")){
-        keyboardState[player].angka = !keyboardState[player].angka;
-        toggleSymbol(keypad, keyboardState[player].angka);
-        btn.innerText = keyboardState[player].angka ? "123" : "/?,";
-        btn.style.background = keyboardState[player].angka ? "#4caf50" : "#9e9e9e";
-        return;
-      }
+      input[player] += huruf;
+    }
 
-      // CLEAR SEMUA
-      if(teks === "C"){
-        input[player] = "";
-      }
-      // GO
-      else if(teks === "GO"){
-        cekJawaban(player);
-        return;
-      }
-      // SPASI
-      else if(teks === "␣"){
-        input[player] += " ";
-      }
-      // DELETE 1 HURUF
-      else if(teks === "⌫"){
-        input[player] = input[player].slice(0, -1);
-      }
-      // HURUF BIASA
-      else{
-        input[player] += teks;
-      }
+    // ANGKA / SIMBOL
+    else if (this.classList.contains("angka")) {
+      input[player] += teks;
+    }
 
-      boxJawaban.value = input[player];
-    });
-  });
+    // TANDA BACA
+    else if (this.classList.contains("punct")) {
+      input[player] += teks;
+    }
+
+    // TAMPILKAN JAWABAN
+    boxJawaban.value = input[player];
+
+  }, { passive: false });
+
+});
+
 
   function toggleShift(keypad, aktif){
     const hurufBtns = keypad.querySelectorAll(".huruf");
@@ -1341,14 +1399,23 @@
 
       ambilSoalPlayer(player);
     }
+    
     // SALAH
-    else{bunyi(300, 0.35);    // SALAH
+    else {
+      bunyi(300, 0.35);
+
       boxJawaban.classList.add("salah");
 
-      setTimeout(()=>{
+      // Simpan timer khusus setiap pemain
+      resetTimer[player] = setTimeout(() => {
+
         boxJawaban.classList.remove("salah");
+
         boxJawaban.value = "";
         input[player] = "";
+
+        resetTimer[player] = null;
+
       }, 600);
     }
   }
@@ -1397,47 +1464,94 @@
   }
 
   function mainLagi(){
+    // Hentikan timer dan bersihkan tampilan jawaban
+    Object.keys(resetTimer).forEach(player => {
+      if (resetTimer[player] !== null) {
+        clearTimeout(resetTimer[player]);
+        resetTimer[player] = null;
+      }
+  
+      const boxJawaban = document.querySelector(
+        `.panel.${player} .jawaban`
+      );
+  
+      boxJawaban.classList.remove("salah");
+      boxJawaban.value = "";
+      input[player] = "";
+    });
+  
     // tutup overlay menang
     document.getElementById("winOverlay").style.display = "none";
-
+  
     // sembunyikan area game
     document.getElementById("gameArea").style.display = "none";
-
+  
     // tampilkan menu pilihan mode
     document.getElementById("mode").style.display = "block";
-
+  
     // reset status game
     gameSelesai = false;
-
+  
     // reset posisi penanda ke tengah
     posisi = 255;
     penanda.setAttribute("x", posisi);
   }
 
   function kembaliMenu(){
-    // tutup overlay menang jika ada
+    // Hentikan timer dan bersihkan tampilan jawaban
+    Object.keys(resetTimer).forEach(player => {
+  
+      if (resetTimer[player] !== null) {
+        clearTimeout(resetTimer[player]);
+        resetTimer[player] = null;
+      }
+  
+      const boxJawaban = document.querySelector(
+        `.panel.${player} .jawaban`
+      );
+  
+      boxJawaban.classList.remove("salah");
+      boxJawaban.value = "";
+      input[player] = "";
+  
+      // Reset soal aktif
+      soalAktif[player] = null;
+  
+      // Reset keyboard
+      keyboardState[player].shift = false;
+      keyboardState[player].angka = false;
+  
+      const keypad = document.querySelector(
+        `.keypad[data-player="${player}"]`
+      );
+  
+      toggleShift(keypad, false);
+      toggleSymbol(keypad, false);
+  
+      keypad.querySelector(".shift").style.background = "#cfd8dc";
+      keypad.querySelector(".mode").textContent = "/?,";
+      keypad.querySelector(".mode").style.background = "#9e9e9e";
+    });
+  
+    // Tutup overlay menang
     document.getElementById("winOverlay").style.display = "none";
-
-    // sembunyikan game
+  
+    // Tutup countdown
+    document.getElementById("countdownOverlay").style.display = "none";
+  
+    // Sembunyikan area game
     document.getElementById("gameArea").style.display = "none";
-
-    // tampilkan menu mode
+  
+    // Tampilkan menu pilihan materi
     document.getElementById("mode").style.display = "block";
-
-    // reset status game
+  
+    // Reset status permainan
     gameSelesai = false;
+  
+    // Reset posisi penanda ke tengah
     posisi = 255;
     penanda.setAttribute("x", posisi);
-
-    // reset input & soal
-    soalAktif.kiri = null;
-    soalAktif.kanan = null;
-    input.kiri = "";
-    input.kanan = "";
-
-    document.querySelectorAll(".jawaban").forEach(j => j.value = "");
   }
-
 </script>
 <!-- REGISTRASI SERVICE WORKER -->
 <script>
