@@ -204,14 +204,17 @@
     .panel-header{
       color:#fff;
       border-radius:10px 10px 0 0;
-      font-weight:400;         /* ketebalan huruf soal */
+      font-weight:400;
       text-align:center;
       font-size:32px;
-      min-height:60px;          /* 🔒 tinggi minimum */
+      min-height:60px;
       display:flex;
-      align-items:center;       /* center vertikal */
-      justify-content:center;   /* center horizontal */
-      padding:0 10px;           /* hilangkan padding atas-bawah */
+      align-items:center;
+      justify-content:center;
+      padding:0 10px;
+    
+      /* FONT AKSARA JAWA */
+      font-family:'NykNgayogyan', sans-serif;
     }
 
 
@@ -1276,9 +1279,12 @@
   
     posisiSoal[player]++;
   
-    document
-      .querySelector(`.panel.${player} .panel-header`)
-      .innerText = soalAktif[player].soal;
+    const headerSoal = document.querySelector(
+      `.panel.${player} .panel-header`
+    );
+    
+    headerSoal.innerText = soalAktif[player].soal;
+    headerSoal.classList.add("aksara-jawa");
   
     // Reset input player itu saja
     input[player] = "";
