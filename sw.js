@@ -1,4 +1,4 @@
-const CACHE_NAME = "tarik-tambang-v1.4";
+const CACHE_NAME = "tarik-tambang-v1.5";
 
 const FILES_TO_CACHE = [
   "./",
