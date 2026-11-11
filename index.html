@@ -863,43 +863,50 @@
   }
 
   function mulaiGame(){
-    const overlay = document.getElementById("countdownOverlay");
-    const text = document.getElementById("countdownText");
-    const game = document.getElementById("gameArea");
-    const mode = document.getElementById("mode");
 
-    mode.style.display = "none";
-    overlay.style.display = "flex";
-
-    let hitung = 3;
-    text.innerText = hitung;
-    bunyi(700, 0.12);   // bunyi hitung
-
-    const timer = setInterval(() => {
-      hitung--;
-
-      if(hitung > 0){
-        text.innerText = hitung;
-        bunyi(700, 0.12);     // 3,2,1
-        text.style.animation = "none";
-        text.offsetHeight;
-        text.style.animation = "zoom 0.5s ease";
-      }
-      else if(hitung === 0){
-        text.innerText = "MULAI!";
-        bunyi(900, 0.25);     // MULAI
-      }
-      else{
-        clearInterval(timer);
-        overlay.style.display = "none";
-
-        game.style.display = "block";
-        ambilSoalPlayer("kiri");
-        ambilSoalPlayer("kanan");
-      }
-    }, 1000);
+      // RESET URUTAN SOAL UNTUK PERMAINAN BARU
+      urutanSoal.kiri = [];
+      urutanSoal.kanan = [];
+  
+      posisiSoal.kiri = 0;
+      posisiSoal.kanan = 0;
+  
+      const overlay = document.getElementById("countdownOverlay");
+      const text = document.getElementById("countdownText");
+      const game = document.getElementById("gameArea");
+      const mode = document.getElementById("mode");
+  
+      mode.style.display = "none";
+      overlay.style.display = "flex";
+  
+      let hitung = 3;
+      text.innerText = hitung;
+      bunyi(700, 0.12);
+  
+      const timer = setInterval(() => {
+        hitung--;
+  
+        if(hitung > 0){
+          text.innerText = hitung;
+          bunyi(700, 0.12);
+          text.style.animation = "none";
+          text.offsetHeight;
+          text.style.animation = "zoom 0.5s ease";
+        }
+        else if(hitung === 0){
+          text.innerText = "MULAI!";
+          bunyi(900, 0.25);
+        }
+        else{
+          clearInterval(timer);
+          overlay.style.display = "none";
+  
+          game.style.display = "block";
+          ambilSoalPlayer("kiri");
+          ambilSoalPlayer("kanan");
+        }
+      }, 1000);
   }
-
   let gameSelesai = false;
   let posisi = 255;
   const penanda = document.getElementById("penanda");
@@ -1214,23 +1221,61 @@
     mulaiGame();
   }
 
-  function ambilSoalPlayer(player){
+  const urutanSoal = {
+    kiri: [],
+    kanan: []
+  };
+  
+  const posisiSoal = {
+    kiri: 0,
+    kanan: 0
+  };
+  
+  function ambilSoalPlayer(player) {
     const daftar = bankSoal[modeAktif];
-    const index = Math.floor(Math.random() * daftar.length);
-
-    soalAktif[player] = daftar[index];
-
+  
+    if (!daftar || daftar.length === 0) {
+      console.error("Bank soal kosong:", modeAktif);
+      return;
+    }
+  
+    // Jika semua soal sudah digunakan, acak ulang
+    if (posisiSoal[player] >= urutanSoal[player].length) {
+  
+      // Buat salinan daftar soal lalu acak
+      urutanSoal[player] = [...daftar];
+  
+      for (let i = urutanSoal[player].length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+  
+        [
+          urutanSoal[player][i],
+          urutanSoal[player][j]
+        ] = [
+          urutanSoal[player][j],
+          urutanSoal[player][i]
+        ];
+      }
+  
+      posisiSoal[player] = 0;
+    }
+  
+    // Ambil soal berikutnya tanpa pengulangan
+    soalAktif[player] = urutanSoal[player][posisiSoal[player]];
+  
+    posisiSoal[player]++;
+  
     document
       .querySelector(`.panel.${player} .panel-header`)
       .innerText = soalAktif[player].soal;
-
-    // reset input player itu saja
+  
+    // Reset input player itu saja
     input[player] = "";
+  
     document
       .querySelector(`.panel.${player} .jawaban`)
       .value = "";
   }
-
   const input = {
     kiri: "",
     kanan: ""
